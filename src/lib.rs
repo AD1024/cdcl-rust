@@ -1,12 +1,25 @@
+mod graph;
+mod solver;
+mod model;
 mod clause;
 
 pub use clause::{tseytin_transform, VariableStore, AST};
+use crate::clause::{to_cnf, push_neg, break_and};
+
+pub fn process_formula(formula : &AST) -> Vec<AST> {
+    let mut result = tseytin_transform(formula, &mut VariableStore::new());
+    break_and(&result.iter()
+                        .map(to_cnf)
+                        .map(|x| push_neg(&x))
+                        .collect())
+}
 
 #[cfg(test)]
 mod tests {
     use crate::{tseytin_transform, VariableStore, AST};
     use AST::*;
     use crate::clause::to_cnf;
+    use super::process_formula;
 
     #[test]
     fn it_works() {
